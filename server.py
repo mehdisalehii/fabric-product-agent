@@ -8,6 +8,8 @@ from dotenv import load_dotenv
 from fastapi import BackgroundTasks, Depends, FastAPI, Header, HTTPException
 from pydantic import BaseModel, Field
 import runner
+from log import log
+import traceback
 
 load_dotenv()
 
@@ -36,10 +38,13 @@ def require_token(x_agent_token: str = Header(default="")) -> None:
 
 
 def _execute(request: RunRequest) -> None:
+    log(f"درخواست دریافت شد: job={request.job} limit={request.limit} update={request.update}")
     try:
         result = runner.run_job(request.job, request.limit, request.update)
     except Exception as error:
-        result = {"error": str(error)}
+        traceback.print_exc()
+        log(f"❌ job با خطا متوقف شد: {type(error).__name__}: {error}")
+        result = {"error": f"{type(error).__name__}: {error}"}
     with _lock:
         _state.update(running=False, finished_at=time.time(), last_result=result)
 

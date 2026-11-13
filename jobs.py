@@ -18,6 +18,16 @@ def products_for_attributes(limit):
                                   WHERE ap.product_id=p.id AND ap.type='attributes'
                                     AND (ap.status='pending' OR ap.status='rejected'))
                 ORDER BY p.id LIMIT %s""", (limit,))
+def suggestion_exists(category_id: int, name: str) -> bool:
+    rows = q(
+        """SELECT 1 FROM agent_proposals
+           WHERE type='new_attribute' AND status IN ('pending','rejected')
+             AND JSON_UNQUOTE(JSON_EXTRACT(payload,'$.name')) = %s
+             AND CAST(JSON_UNQUOTE(JSON_EXTRACT(payload,'$.category_id')) AS UNSIGNED) = %s
+           LIMIT 1""",
+        (name, category_id),
+    )
+    return bool(rows)
 
 def run_attributes(p, update_existing=False):
     allowed = allowed_attributes(p["category_id"])
@@ -64,7 +74,7 @@ def run_attributes(p, update_existing=False):
         save_proposal(p["id"], "attributes", {"items": items}, p["updated_at"], model)
 
     for s in data.get("missing_attribute_suggestions", [])[:3]:
-        if s.get("name"):
+        if s.get("name") and not suggestion_exists(p["category_id"], s["name"]):
             save_proposal(p["id"], "new_attribute",
                           {"name": s["name"], "reason": s.get("reason", ""), "category_id": p["category_id"]},
                           p["updated_at"], model)

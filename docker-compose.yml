@@ -4,6 +4,9 @@ services:
     build: .
     restart: unless-stopped
     env_file: .env
+    environment:
+      DB_HOST: fabric-db
+      DB_PORT: "3306"  
     networks: [laravel]
 
 networks:

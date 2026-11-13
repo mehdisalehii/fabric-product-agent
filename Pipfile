@@ -1,0 +1,19 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+pymysql = "*"
+pillow = "*"
+httpx = "*"
+python-dotenv = "*"
+openai = "*"
+fastapi = "*"
+uvicorn = {extras = ["standard"], version = "*"}
+runner = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.14"

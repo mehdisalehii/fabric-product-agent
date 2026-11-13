@@ -1,0 +1,12 @@
+services:
+  agent:
+    container_name: fabric-agent
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    networks: [laravel]
+
+networks:
+  laravel:
+    external: true
+    name:  app-net
